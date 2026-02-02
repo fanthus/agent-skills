@@ -11,7 +11,7 @@ def generate_image_correctly(prompt_text):
     print(f"正在使用 Imagen 3 生成: {prompt_text} ...")
 
     try:
-        model = ImageGenerationModel.from_pretrained("imagen-3.0-generate-001")
+        model = ImageGenerationModel.from_pretrained("imagen-4.0-ultra-generate-001")
         images = model.generate_images(
             prompt=prompt_text,
             number_of_images=1,
