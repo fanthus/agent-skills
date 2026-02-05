@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <!-- 
+    SECURITY: Content Security Policy
+    BEST PRACTICE: Restrict resource loading to prevent XSS attacks
+    Adjust these directives based on your needs
+  -->
+  <meta http-equiv="Content-Security-Policy" 
+        content="default-src 'self'; 
+                 script-src 'self'; 
+                 style-src 'self' 'unsafe-inline';
+                 img-src 'self' data:;">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Electron App</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Custom Title Bar (optional - for frameless windows) -->
+  <div class="titlebar">
+    <div class="titlebar-drag-region">Electron App</div>
+    <div class="titlebar-controls">
+      <button id="minimize-btn" class="titlebar-btn" title="Minimize">−</button>
+      <button id="maximize-btn" class="titlebar-btn" title="Maximize">□</button>
+      <button id="close-btn" class="titlebar-btn close" title="Close">×</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- File Operations Section -->
+    <section class="section">
+      <h2>📁 File Operations</h2>
+      
+      <div class="demo-group">
+        <button id="open-file-btn" class="btn">Open File</button>
+        <div id="file-info" class="info-box"></div>
+      </div>
+
+      <div class="demo-group">
+        <h3>File Content</h3>
+        <textarea id="file-content" placeholder="File content will appear here..."></textarea>
+        <button id="save-file-btn" class="btn btn-primary">Save File</button>
+      </div>
+
+      <!-- 
+        BEST PRACTICE: Drag & Drop File Support
+        UX: Visual feedback during drag operations
+      -->
+      <div class="demo-group">
+        <div id="drop-zone" class="drop-zone">
+          <p>📎 Drag and drop files here</p>
+          <p class="hint">or click "Open File" button above</p>
+        </div>
+        <div id="drop-result" class="info-box"></div>
+      </div>
+    </section>
+
+    <!-- Window Controls Section -->
+    <section class="section">
+      <h2>🪟 Window Controls</h2>
+      <div class="demo-group btn-group">
+        <button id="window-minimize" class="btn">Minimize Window</button>
+        <button id="window-maximize" class="btn">Toggle Maximize</button>
+      </div>
+    </section>
+
+    <!-- Notifications Section -->
+    <section class="section">
+      <h2>🔔 Notifications</h2>
+      <div class="demo-group">
+        <input type="text" id="notification-title" placeholder="Notification title" class="input">
+        <textarea id="notification-body" placeholder="Notification message" class="input"></textarea>
+        <button id="show-notification-btn" class="btn btn-primary">Show Notification</button>
+      </div>
+    </section>
+
+    <!-- System Info Section -->
+    <section class="section">
+      <h2>ℹ️ System Information</h2>
+      <div class="demo-group">
+        <div id="system-info" class="info-box">
+          <p><strong>Platform:</strong> <span id="platform-info">Loading...</span></p>
+          <p><strong>Environment:</strong> <span id="env-info">Loading...</span></p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Load renderer script -->
+  <script src="renderer.js"></script>
+</body>
+</html>
