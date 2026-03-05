@@ -1,6 +1,6 @@
 # Cursor Skills
 
-本仓库是 **Cursor Agent Skills** 的集合，用于扩展 Cursor 的领域能力。每个技能对应一个目录，内含 `SKILL.md`，供 Cursor 在相关场景下自动加载并遵循其中的指令。
+本仓库是 **Cursor Agent Skills** 的集合，用于扩展 Cursor 的领域能力。每个技能对应一个目录，内含 `SKILL.md`，供 Cursor 在相关场景下自动加载并遵循其中的指令。。
 
 ## 技能列表
 
