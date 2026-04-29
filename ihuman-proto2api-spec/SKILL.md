@@ -1,9 +1,9 @@
 ---
-name: proto2api-spec
+name: ihuman-proto2api-spec
 description: 将 protobuf/proto 接口定义按 DATA_SPEC.md 规范转换为 API 字段路径文档，并同时产出 Markdown 与对应 HTML。自动调用当用户请求将 proto/protobuf 接口数据平铺、展开嵌套字段、生成字段路径表或生成 API 文档时。
 ---
 
-# Proto2API Spec
+# iHuman Proto2API Spec
 
 将 `.proto` 或 protobuf 接口定义转换为标准 API 字段路径文档，并先生成 Markdown，再转换出对应 HTML。
 

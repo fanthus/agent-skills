@@ -1,0 +1,431 @@
+//
+//  ILLiveNetworkManager.m
+//  SuperClassSDK
+//
+
+#import <ILNetworkService/ILNetworkServiceImpl.h>
+#import <ILNetworkService/ILNetworkConfigProtocol.h>
+#import <ILNetworkService/ILNetworkServiceProtocol.h>
+#import <ILProtocolBuffer/Serializer/ILProtobufSerializer.h>
+#import <ILProtocolBuffer/Serializer/GPBMessage+ILNetworkRequest.h>
+#import <ILProtocolBuffer/interface/student_api/IsResCourseware.pbobjc.h>
+#import <ILProtocolBuffer/interface/student_api/IsResQuestion.pbobjc.h>
+#import <ILProtocolBuffer/interface/student_live_api/IlLive.pbobjc.h>
+#import <ILProtocolBuffer/interface/student_live_api/IlActivity.pbobjc.h>
+#import "ILLiveNetworkManager.h"
+#import "ILNetworkDefine.h"
+#import "ILClassroomConfig.h"
+#import "ILNetworkConfig.h"
+#import "ILUser.h"
+
+@interface ILLiveNetworkManager () <ILNetworkConfigProtocol>
+
+@property (nonatomic, strong) id<ILNetworkServiceProtocol> service;
+@property (nonatomic, copy) NSString *accessToken;
+@property (nonatomic, copy) NSString *userID;
+
+@end
+
+@implementation ILLiveNetworkManager {
+    id<ILNetworkServiceProtocol> _service;
+}
+
++ (instancetype)shared {
+    static ILLiveNetworkManager *instance = nil;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        instance = [[ILLiveNetworkManager alloc] init];
+    });
+    return instance;
+}
+
++ (void)setupWithConfig:(ILClassroomConfig *)config {
+    ILLiveNetworkManager *manager = [self shared];
+    @synchronized (manager) {
+        manager.accessToken = config.userSig;
+        manager.userID = config.userID;
+        manager.service = nil;
+    }
+}
+
++ (void)logout {
+    ILLiveNetworkManager *manager = [self shared];
+    @synchronized (manager) {
+        manager.accessToken = nil;
+        manager.userID = nil;
+        manager.service = nil;
+    }
+}
+
+- (id<ILNetworkServiceProtocol>)service {
+    if (!_service) {
+        ILProtobufSerializer *serializer = [[ILProtobufSerializer alloc] init];
+        _service = [[ILNetworkServiceImpl alloc] initWithBaseURL:[ILNetworkConfig currentHost]
+                                                          config:self
+                                                      serializer:serializer];
+    }
+    return _service;
+}
+
+- (void)setService:(id<ILNetworkServiceProtocol>)service {
+    _service = service;
+}
+
+#pragma mark - ILNetworkConfigProtocol
+
+- (NSDictionary<NSString *, NSString *> *)currentHeaders {
+    NSMutableDictionary<NSString *, NSString *> *headers = [NSMutableDictionary dictionary];
+    @synchronized (self) {
+        if (self.accessToken.length > 0) {
+            headers[@"Authorization"] = [@"Bearer " stringByAppendingString:self.accessToken];
+        }
+        if (self.userID.length > 0) {
+            headers[@"X-User-Id"] = self.userID;
+        }
+    }
+    return [headers copy];
+}
+
+#pragma mark - 内部
+
++ (void)il_postRequest:(GPBMessage *)request
+         responseClass:(Class)responseClass
+               success:(ILNetworkSuccessBlock)success
+               failure:(ILNetworkFailureBlock)failure {
+    [[self shared].service requestWithPath:request.networkPath
+                                    method:ILHTTPMethodPost
+                                   request:request
+                             responseClass:responseClass
+                                   success:success
+                                   failure:failure];
+}
+
++ (void)il_postPath:(NSString *)path
+            request:(GPBMessage *)request
+      responseClass:(Class)responseClass
+            success:(ILNetworkSuccessBlock)success
+            failure:(ILNetworkFailureBlock)failure {
+    [[self shared].service requestWithPath:path
+                                    method:ILHTTPMethodPost
+                                   request:request
+                             responseClass:responseClass
+                                   success:success
+                                   failure:failure];
+}
+
+#pragma mark - 直播基础
+
+// 学生加入房间，统一处理首次加入和断线重连；服务端按 userId 判断首次或重入
++ (void)studentJoinWithRoomID:(int64_t)roomID
+                     courseID:(int64_t)courseID
+                     lessonID:(int64_t)lessonID
+                     platform:(ILCCPlatformType)platform
+                      success:(void (^)(ILILStudentJoinResp *resp))success
+                      failure:(void (^)(NSError *error))failure {
+    ILILStudentJoinReq *req = [[ILILStudentJoinReq alloc] init];
+    req.roomId = roomID;
+//    req.courseId = courseID;
+//    req.lessonId = lessonID;
+    [self il_postPath:ILNetworkPathStudentLiveRoomStudentJoin
+              request:req
+        responseClass:[ILILStudentJoinResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 学生离开房间；服务端更新状态、生成课堂报告，返回参课时长
++ (void)studentLeaveWithRoomID:(int64_t)roomID
+                   leaveReason:(NSString *)leaveReason
+                       success:(void (^)(ILILStudentLeaveResp *resp))success
+                       failure:(void (^)(NSError *error))failure {
+    ILILStudentLeaveReq *req = [[ILILStudentLeaveReq alloc] init];
+    req.roomId = roomID;
+    req.leaveReason = leaveReason ?: @"";
+    [self il_postPath:ILNetworkPathStudentLiveRoomStudentLeave
+              request:req
+        responseClass:[ILILStudentLeaveResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取房间公共状态，可独立调用；返回房间信息、当前课件、教师流列表、静音状态
++ (void)getStudentRoomInfoWithCourseID:(int64_t)courseID
+                              lessonID:(int64_t)lessonID
+                               success:(void (^)(ILILGetStudentRoomInfoResp *resp))success
+                               failure:(void (^)(NSError *error))failure {
+    ILILGetStudentRoomInfoReq *req = [[ILILGetStudentRoomInfoReq alloc] init];
+    req.courseId = courseID;
+    req.lessonId = lessonID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentRoomInfo
+              request:req
+        responseClass:[ILILGetStudentRoomInfoResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取学生基础数据（金币、禁言、拉黑）；StudentJoin 后调用，或金币变化时单独调用
++ (void)getStudentInfoWithRoomID:(int64_t)roomID
+                         success:(void (^)(ILILGetStudentInfoResp *resp))success
+                         failure:(void (^)(NSError *error))failure {
+    ILILGetStudentInfoReq *req = [[ILILGetStudentInfoReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentInfo
+              request:req
+        responseClass:[ILILGetStudentInfoResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取小组成员数据（含金币）；StudentJoin 后用 my_group_id 查询
++ (void)getStudentGroupInfoWithRoomID:(int64_t)roomID
+                              groupID:(int64_t)groupID
+                              success:(void (^)(ILILGetStudentGroupInfoResp *resp))success
+                              failure:(void (^)(NSError *error))failure {
+    ILILGetStudentGroupInfoReq *req = [[ILILGetStudentGroupInfoReq alloc] init];
+    req.roomId = roomID;
+    req.groupId = groupID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentGroupInfo
+              request:req
+        responseClass:[ILILGetStudentGroupInfoResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取互动状态汇总（连麦、举手、答题、投票、签到、抢麦、计时器）
++ (void)getStudentActivityProgressWithRoomID:(int64_t)roomID
+                                     success:(void (^)(ILILGetStudentActivityProgressResp *resp))success
+                                     failure:(void (^)(NSError *error))failure {
+    ILILGetStudentActivityProgressReq *req = [[ILILGetStudentActivityProgressReq alloc] init];
+    req.roomId = @(roomID).stringValue;
+    [self il_postPath:ILNetworkPathStudentLiveStudentActivityProgress
+              request:req
+        responseClass:[ILILGetStudentActivityProgressResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取连麦进度（拆分接口）
++ (void)getStudentSpeakProgressWithRoomID:(int64_t)roomID
+                                  success:(void (^)(ILILGetStudentSpeakProgressResp *resp))success
+                                  failure:(void (^)(NSError *error))failure {
+    ILILGetStudentSpeakProgressReq *req = [[ILILGetStudentSpeakProgressReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentSpeakProgress
+              request:req
+        responseClass:[ILILGetStudentSpeakProgressResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取答题进度（拆分接口）
++ (void)getStudentQuizProgressWithRoomID:(int64_t)roomID
+                                 success:(void (^)(ILILGetStudentQuizProgressResp *resp))success
+                                 failure:(void (^)(NSError *error))failure {
+    ILILGetStudentQuizProgressReq *req = [[ILILGetStudentQuizProgressReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentQuizProgress
+              request:req
+        responseClass:[ILILGetStudentQuizProgressResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取投票进度（拆分接口）
++ (void)getStudentVoteProgressWithRoomID:(int64_t)roomID
+                                 success:(void (^)(ILILGetStudentVoteProgressResp *resp))success
+                                 failure:(void (^)(NSError *error))failure {
+    ILILGetStudentVoteProgressReq *req = [[ILILGetStudentVoteProgressReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentVoteProgress
+              request:req
+        responseClass:[ILILGetStudentVoteProgressResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取签到进度（拆分接口）
++ (void)getStudentSignInProgressWithRoomID:(int64_t)roomID
+                                   success:(void (^)(ILILGetStudentSignInProgressResp *resp))success
+                                   failure:(void (^)(NSError *error))failure {
+    ILILGetStudentSignInProgressReq *req = [[ILILGetStudentSignInProgressReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentSignInProgress
+              request:req
+        responseClass:[ILILGetStudentSignInProgressResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取抢麦进度（拆分接口）
++ (void)getStudentGrabMicProgressWithRoomID:(int64_t)roomID
+                                    success:(void (^)(ILILGetStudentGrabMicProgressResp *resp))success
+                                    failure:(void (^)(NSError *error))failure {
+    ILILGetStudentGrabMicProgressReq *req = [[ILILGetStudentGrabMicProgressReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentGrabMicProgress
+              request:req
+        responseClass:[ILILGetStudentGrabMicProgressResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取计时器进度（拆分接口）
++ (void)getStudentTimerProgressWithRoomID:(int64_t)roomID
+                                  success:(void (^)(ILILGetStudentTimerProgressResp *resp))success
+                                  failure:(void (^)(NSError *error))failure {
+    ILILGetStudentTimerProgressReq *req = [[ILILGetStudentTimerProgressReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentTimerProgress
+              request:req
+        responseClass:[ILILGetStudentTimerProgressResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取回放互动题目内容及学生历史作答记录；在观看回放到达互动节点时调用
++ (void)getStudentReplayQuizWithRoomID:(int64_t)roomID
+                                quizID:(int64_t)quizID
+                               success:(void (^)(ILILGetStudentReplayQuizResp *resp))success
+                               failure:(void (^)(NSError *error))failure {
+    ILILGetStudentReplayQuizReq *req = [[ILILGetStudentReplayQuizReq alloc] init];
+    req.roomId = roomID;
+    req.quizId = quizID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentReplayQuiz
+              request:req
+        responseClass:[ILILGetStudentReplayQuizResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取学生课堂学习报告（上课时长、金币数、答题统计、互动次数）
++ (void)getStudentClassReportWithRoomID:(int64_t)roomID
+                                success:(void (^)(ILILGetStudentClassReportResp *resp))success
+                                failure:(void (^)(NSError *error))failure {
+    ILILGetStudentClassReportReq *req = [[ILILGetStudentClassReportReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentClassReport
+              request:req
+        responseClass:[ILILGetStudentClassReportResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+// 获取直播回放信息（URL、时长、互动节点列表）
++ (void)getStudentReplayInfoWithRoomID:(int64_t)roomID
+                               success:(void (^)(ILILGetStudentReplayInfoResp *resp))success
+                               failure:(void (^)(NSError *error))failure {
+    ILILGetStudentReplayInfoReq *req = [[ILILGetStudentReplayInfoReq alloc] init];
+    req.roomId = roomID;
+    [self il_postPath:ILNetworkPathStudentLiveStudentReplay
+              request:req
+        responseClass:[ILILGetStudentReplayInfoResp class]
+              success:^(id response) {
+        if (success) {
+            success(response);
+        }
+    } failure:^(NSError *error, id response) {
+        if (failure) {
+            failure(error);
+        }
+    }];
+}
+
+@end

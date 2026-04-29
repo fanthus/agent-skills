@@ -1,4 +1,4 @@
 interface:
   display_name: "Proto2API Spec"
   short_description: "从 proto 接口定义生成标准 API 字段文档"
-  default_prompt: "Use $proto2api-spec to turn this .proto interface into a standard API field document."
+  default_prompt: "Use $ihuman-proto2api-spec to turn this .proto interface into a standard API field document."

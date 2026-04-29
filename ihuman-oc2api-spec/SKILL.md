@@ -1,9 +1,9 @@
 ---
-name: oc2api-spec
+name: ihuman-oc2api-spec
 description: 将 protobuf 生成的 Objective-C 类按 DATA_SPEC.md 规范转换为 API 字段路径文档，并同时产出 Markdown 与对应 HTML。自动调用当用户请求将 OC 接口数据平铺、展开嵌套字段、从 .pbobjc.h 生成字段路径表或生成 OC API 文档时。
 ---
 
-# OC2API Spec
+# iHuman OC2API Spec
 
 将 protobuf 生成的 Objective-C 类，尤其是 `.pbobjc.h`，转换为标准 API 字段路径文档，并交付 Markdown 与对应 HTML。
 

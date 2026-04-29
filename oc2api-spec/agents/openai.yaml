@@ -1,4 +1,0 @@
-interface:
-  display_name: "OC2API Spec"
-  short_description: "从 OC protobuf 类生成 API 字段文档"
-  default_prompt: "Use $oc2api-spec to turn this .pbobjc.h interface into a standard API field document."
