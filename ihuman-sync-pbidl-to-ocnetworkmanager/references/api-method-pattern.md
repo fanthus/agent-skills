@@ -4,6 +4,18 @@
 
 `assets/ILLiveNetworkManager.{h,m}.example` 是完整真实样例，遇到拿不准的细节去对照。
 
+## 先保兼容，再生成新形态
+
+生成方法前先把当前 proto 接口跟旧版方法对上。只要某个接口在旧版已经存在，并且当前 proto 仍然存在，就把旧版稳定的 OC 形态当作默认答案：
+- `.h` 方法名、参数名、参数类型、参数顺序、success/failure block 类型优先沿用旧版
+- `.m` 里的 req 字段赋值、类型转换、nil 防御、默认值优先沿用旧版
+- 旧版 OC 方法名和当前 rpc 名不完全一致时，只要能确认是同一接口，也优先保留旧 OC 方法名
+- 只有 proto 字段删除、字段类型真实变化、Req/Resp 类名变化等导致旧签名无法正确表达当前接口时，才调整签名或映射
+
+新增接口才按本文件后面的命名约定从 proto 推导；推导时也要参考旧版相邻业务接口，让方法签名风格尽量一致。
+
+如果目标 `ILLiveNetworkManager.{h,m}` 已经被删除，使用 `assets/ILLiveNetworkManager.{h,m}.example` 作为旧版稳定基线；必要时再从项目 git 历史找最近一次真实版本确认。不要因为旧文件被删除就改用全新的签名风格。
+
 ## 注释是必填项，不是可选项
 
 这一份文件里所有"模式"都包含注释。生成方法时**不要省略注释** —— 这是这个 SDK 代码风格的核心约定，比方法实现本身还重要。原因：
@@ -68,7 +80,7 @@ PB 生成的类名前缀是 `ILIL`：第一个 `IL` 是包前缀，第二个 `IL
 - 【场景】解释**为什么有这个接口**：什么时候调、跟其他接口怎么配合、是否拆分接口的子集等
 - 【返回】不是字段清单，是一句话概括："RTC 配置、频道列表、IM 配置"
 
-参数顺序：业务主键（roomID/courseID 等）在前，可选/次要参数在后，最后是 `success` 和 `failure`。
+参数顺序：旧接口优先沿用旧版；新增接口按业务主键（roomID/courseID 等）在前，可选/次要参数在后，最后是 `success` 和 `failure`。
 
 ## .m 里的方法实现
 
@@ -102,6 +114,7 @@ PB 生成的类名前缀是 `ILIL`：第一个 `IL` 是包前缀，第二个 `IL
 - failure block 形参是 `(NSError *error, id response)`，外层只关心 `error`
 - 字符串字段做 nil 防御：`req.leaveReason = leaveReason ?: @"";`
 - 空响应（无返回字段）也要传 responseClass（PB 会有空 Resp 类，例如 `ILILXxxResp`）
+- 旧版存在特殊映射时优先保留，例如 int64 参数转 string、OC 参数名和 req 属性名不完全一致、默认值或 nil 防御策略；如果当前 proto 类型变化让特殊映射不再合理，先标为"签名/映射变化"给用户确认
 
 ## 分组（pragma mark）
 
@@ -124,7 +137,7 @@ PB 生成的类名前缀是 `ILIL`：第一个 `IL` 是包前缀，第二个 `IL
 
 ## 边界情况
 
-**字段类型不匹配**：例如 example 里 `getStudentActivityProgressWithRoomID:` 把 int64 roomID 转成了 string（`req.roomId = @(roomID).stringValue;`）。这种特殊处理只在 proto 里 `room_id` 字段类型是 string 时才需要。生成时**先看 proto 里字段实际类型**，不要照抄 example。
+**字段类型不匹配**：例如 example 里 `getStudentActivityProgressWithRoomID:` 把 int64 roomID 转成了 string（`req.roomId = @(roomID).stringValue;`）。如果当前 proto 仍是 string，保留旧版 int64 入参 + string 转换这种稳定对外签名；如果当前 proto 已改为 int64，再判断是否需要移除转换，并把这类变化列入变更预览。
 
 **注释里的字段在 proto 里被注释掉了**：example 里 `studentJoinWithRoomID:` 的 `req.courseId/lessonId` 用 `//` 注释掉了。说明历史上 proto 字段变过。生成新代码时按 proto 当前定义来，不要保留这种过时痕迹。
 

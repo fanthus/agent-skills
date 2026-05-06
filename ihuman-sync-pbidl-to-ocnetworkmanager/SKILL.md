@@ -33,9 +33,10 @@ description: Sync iHuman pb-idl proto changes into the Objective-C network manag
 3. pod install
 4. 删旧的 ILLiveNetworkManager.{h,m}
 5. 读三个 proto，列接口清单
-6. （可选）跟旧版 diff，给用户看变更预览
+6. 跟旧版签名/参数映射 diff，给用户看变更预览，并保存旧版兼容性基线
 7. 用 skeleton + 生成的 API 方法，写新的 ILLiveNetworkManager.{h,m}
    —— 每个 API 方法都必须带注释（.h 三槽位 doc comment、.m 一行业务说明）
+   —— 当前 proto 仍存在的接口，优先沿用旧版已经稳定的 OC 方法签名和参数映射
 8. 更新 ILNetworkDefine.{h,m}：把新清单里所有 path 常量同步进去（新增/改路径/删除已废弃的）
 9. 用户验收
 10. Podfile 改回远程版本
@@ -50,7 +51,17 @@ description: Sync iHuman pb-idl proto changes into the Objective-C network manag
 - `references/api-method-pattern.md` — Step 7 单个 API 方法在 .h 和 .m 里的代码模式、命名约定、边界情况。**生成代码时读这个。**
 - `references/network-define-update.md` — Step 8 怎么同步更新 `ILNetworkDefine.{h,m}`，包括常量命名、路径字符串来源、增删改逻辑、与 ILLiveNetworkManager.m 的对账。**写完 ILLiveNetworkManager.m 后读这个。**
 - `assets/ILLiveNetworkManager.h.skeleton` / `.m.skeleton` — 文件骨架，固定不变的部分（单例、setup/logout、ILNetworkConfigProtocol、内部 post 方法），里面有 `{{API_DECLARATIONS}}` / `{{API_IMPLEMENTATIONS}}` / `{{ADDITIONAL_PB_IMPORTS}}` 占位。**写新文件时基于这个起手。**
-- `assets/ILLiveNetworkManager.h.example` / `.m.example` — 上一版的完整真实代码，遇到拿不准的细节去对照。注意 example 是上一版 proto 的产物，不要直接抄接口列表，只参考代码风格。
+- `assets/ILLiveNetworkManager.h.example` / `.m.example` — 上一版的完整真实代码，遇到拿不准的细节去对照。注意 example 是上一版 proto 的产物，不要直接抄接口列表；但对当前 proto 仍存在的旧接口，必须优先继承 example/旧文件里已经稳定的 OC 方法签名、参数顺序、参数类型、命名和 req 字段赋值方式。
+
+## 兼容性优先原则
+
+即使旧的 `ILLiveNetworkManager.{h,m}` 已经被删除，生成新版时也不能把所有接口都按 proto 机械重翻译一遍。这个 Manager 是 SDK 对外接口，旧版已经稳定的方法签名和参数映射属于兼容性基线。
+
+具体规则：
+- 当前 proto 仍存在、旧版也暴露过的接口：优先沿用旧版 OC 方法名、参数名、参数类型、参数顺序、success/failure block 类型，以及 `.m` 里的 req 属性赋值/类型转换/nil 防御。只有 proto 字段已经真实删除或类型变化导致无法兼容时，才调整签名或映射，并在变更预览里明确列出来。
+- 新增接口：按 `references/api-method-pattern.md` 生成，但方法命名、参数排序、注释密度、path 常量命名、req 赋值风格要尽量贴近旧版相邻业务接口。
+- proto 已移除的旧接口：新版不要继续生成；但要在变更预览或最终说明里列出，避免调用方误以为遗漏。
+- 旧文件还在时，删除前先 grep/读取旧 `.h/.m` 保存基线；旧文件已经被删时，用 `assets/ILLiveNetworkManager.{h,m}.example` 作为稳定基线，必要时再从 git 历史找最近一次真实版本辅助确认。
 
 ## 跟用户协作的节奏
 
@@ -62,7 +73,7 @@ description: Sync iHuman pb-idl proto changes into the Objective-C network manag
 **确认点 2：新的 .h/.m 写完后，把 Podfile 改回远程版本之前。**
 先让用户看新文件，确认接口签名、注释、分组合理。如果用户要改，改完再说"现在我把 Podfile 改回远程版本，结束流程"。
 
-中间如果遇到拿不准的（比如某个字段类型 proto 里是 string、example 里转成了 int64，搞不清是历史包袱还是有意为之），停下来问，不要瞎猜。
+中间如果遇到拿不准的（比如某个字段类型 proto 里是 string、旧版方法参数是 int64 并做了 string 转换，搞不清是历史包袱还是有意为之），停下来问，不要瞎猜。
 
 **通用兜底原则：任何时候只要不确定，先问再做。**
 除了上面两个预设的确认点，凡是流程中出现拿不准的情况 —— 路径不存在、proto 解析有歧义、命名跟旧版冲突、不知道分组放哪、不知道某个字段要不要做 nil 防御 —— 都先停下来问用户，不要替他做选择。
@@ -77,7 +88,7 @@ description: Sync iHuman pb-idl proto changes into the Objective-C network manag
 - **不要清整个 `~/Library/Developer/Xcode/DerivedData/`** —— 用户可能同时在跑别的 Xcode 项目。只清 `SuperClassSDK-*`。
 - **不要在没确认前置步骤的情况下假设 ilprotocolbuffer 是最新的** —— 这是流程出错的最常见原因。
 - **不要把三个 proto 拆成三个 Manager 类** —— 用户明确要合并到一个文件。
-- **不要保留 example 里旧版的接口** —— 以当前 proto 为准，example 只用于学习代码风格。
+- **不要把 proto 已移除的旧接口继续生成出来** —— 接口全集以当前 proto 为准；但当前 proto 仍存在的旧接口，必须优先保留旧版稳定的 OC 方法签名和参数映射，example/旧文件不只是代码风格参考，也是兼容性基线。
 - **不要在 Podfile 改回远程后再跑 pod install** —— 会触发远程拉取，跟当前任务无关，可能引入意外变更。
 - **不要硬猜 PB 类名前缀** —— example 里前缀是 `ILIL`，但如果 proto 改了 `option objc_class_prefix`，前缀就变了。生成代码前先看 `ilprotocolbuffer/ILProtocolBuffer/Classes/interface/<service_name>/` 下实际产物的类名。
 - **不要省略方法注释** —— 哪怕 proto 里完全没注释，.h 里也要至少写一行 `///` 描述（从方法名 + 业务上下文推断）；.m 里每个方法上方至少一行 `//` 说明。生成无注释的"裸"方法是 NG 的。详见 `references/api-method-pattern.md`。
@@ -93,8 +104,9 @@ description: Sync iHuman pb-idl proto changes into the Objective-C network manag
 [ 读 references/proto-to-api-list.md ]
 [ Step 5 ] view ~/ihuman/pb-idl/proto/services/api/{student_api,student_live_api,user_api}.proto
            列出接口清单
-[ Step 6 ] grep 旧版 .h 提供的方法（必须在删除文件之前做，结果留着用）
-           跟新清单 diff，告诉用户"新增 X、改动 Y、移除 Z"
+[ Step 6 ] grep/读取旧版 .h/.m 的方法签名和 req 参数映射（必须在删除文件之前做，结果留着用；
+           如果旧文件已删除，就用 assets/ILLiveNetworkManager.{h,m}.example，必要时查 git 历史）
+           跟新清单 diff，告诉用户"新增 X、沿用旧签名 Y、签名/映射变化 Z、移除 W"
 ==> 确认点 1：等用户 OK <==
 
 [ Step 4 ] rm -f ~/ihuman/superclasssdk/SuperClassSDK/Classes/Core/ILLiveNetworkManager.{h,m}
@@ -103,6 +115,7 @@ description: Sync iHuman pb-idl proto changes into the Objective-C network manag
 [ 读 assets/ILLiveNetworkManager.{h,m}.skeleton 和 .example ]
 [ Step 7 ] 基于 skeleton 创建新文件，按 references/api-method-pattern.md 生成 API 方法。
            每个方法必须带注释：.h 用 /// 三槽位（描述/【场景】/【返回】），.m 上方一行中文业务说明。
+           当前 proto 仍存在的旧接口先照旧版稳定签名和参数映射生成；新增接口再按旧版相邻接口风格推导。
            写入：~/ihuman/superclasssdk/SuperClassSDK/Classes/Core/ILLiveNetworkManager.{h,m}
 [ Step 8 ] 更新 ~/ihuman/superclasssdk/SuperClassSDK/Classes/Core/ILNetworkDefine.{h,m}：
            按新清单同步所有 path 常量（声明 + 赋值）
