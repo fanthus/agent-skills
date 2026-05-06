@@ -37,6 +37,7 @@ description: Sync iHuman pb-idl proto changes into the Objective-C network manag
 7. 用 skeleton + 生成的 API 方法，写新的 ILLiveNetworkManager.{h,m}
    —— 每个 API 方法都必须带注释（.h 三槽位 doc comment、.m 一行业务说明）
    —— 当前 proto 仍存在的接口，优先沿用旧版已经稳定的 OC 方法签名和参数映射
+   —— 每个接口实现内部用 `[[Req alloc] initWithPath:ILNetworkPathXxx]` 创建 req，并通过 `[self il_postRequest:req responseClass:...]` 发送
 8. 更新 ILNetworkDefine.{h,m}：把新清单里所有 path 常量同步进去（新增/改路径/删除已废弃的）
 9. 用户验收
 10. Podfile 改回远程版本
@@ -116,6 +117,7 @@ description: Sync iHuman pb-idl proto changes into the Objective-C network manag
 [ Step 7 ] 基于 skeleton 创建新文件，按 references/api-method-pattern.md 生成 API 方法。
            每个方法必须带注释：.h 用 /// 三槽位（描述/【场景】/【返回】），.m 上方一行中文业务说明。
            当前 proto 仍存在的旧接口先照旧版稳定签名和参数映射生成；新增接口再按旧版相邻接口风格推导。
+           方法实现内部统一使用 req 的 initWithPath: 绑定 ILNetworkPath 常量，然后调用 il_postRequest:responseClass:success:failure:。
            写入：~/ihuman/superclasssdk/SuperClassSDK/Classes/Core/ILLiveNetworkManager.{h,m}
 [ Step 8 ] 更新 ~/ihuman/superclasssdk/SuperClassSDK/Classes/Core/ILNetworkDefine.{h,m}：
            按新清单同步所有 path 常量（声明 + 赋值）

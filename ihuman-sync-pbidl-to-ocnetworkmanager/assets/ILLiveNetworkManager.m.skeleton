@@ -93,20 +93,9 @@
          responseClass:(Class)responseClass
                success:(ILNetworkSuccessBlock)success
                failure:(ILNetworkFailureBlock)failure {
-    [[self shared].service requestWithPath:request.networkPath
-                                    method:ILHTTPMethodPost
-                                   request:request
-                             responseClass:responseClass
-                                   success:success
-                                   failure:failure];
-}
-
-+ (void)il_postPath:(NSString *)path
-            request:(GPBMessage *)request
-      responseClass:(Class)responseClass
-            success:(ILNetworkSuccessBlock)success
-            failure:(ILNetworkFailureBlock)failure {
-    [[self shared].service requestWithPath:path
+    ILLiveNetworkManager *manager = [self shared];
+    [self il_logPostCurlWithPath:request.networkPath request:request];
+    [manager.service requestWithPath:request.networkPath
                                     method:ILHTTPMethodPost
                                    request:request
                              responseClass:responseClass
@@ -119,8 +108,8 @@
 // 每个方法实现上方加一行中文注释，简述场景。
 // 实现遵循固定模式（参见 references/api-method-pattern.md）：
 //   - 类方法 +
-//   - 创建 ILIL<ReqName> req，赋值字段
-//   - 调用 [self il_postPath:ILNetworkPath<Xxx> request:req responseClass:[ILIL<RespName> class] success:... failure:...]
+//   - 用 [[ILIL<ReqName> alloc] initWithPath:ILNetworkPath<Xxx>] 创建 req，再赋值字段
+//   - 调用 [self il_postRequest:req responseClass:[ILIL<RespName> class] success:... failure:...]
 //   - success/failure block 透传到外层
 
 @end

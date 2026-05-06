@@ -7,7 +7,7 @@
 ~/ihuman/superclasssdk/SuperClassSDK/Classes/Core/ILNetworkDefine.m
 ```
 
-它们维护"path 常量名 → URL 路径字符串"的映射。`ILLiveNetworkManager.m` 里所有 `il_postPath:` 调用引用的常量都必须在这里有定义，否则编译失败。
+它们维护"path 常量名 → URL 路径字符串"的映射。`ILLiveNetworkManager.m` 里所有 `initWithPath:ILNetworkPath...` 引用的常量都必须在这里有定义，否则编译失败。
 
 ## 文件格式（参考已有内容）
 
@@ -85,7 +85,7 @@ grep -r "ILNetworkPathXxx" ~/ihuman/superclasssdk/
 
 ## 跟 ILLiveNetworkManager.m 的同步
 
-写完 ILLiveNetworkManager.m 后，立刻做一次自检：把 ILLiveNetworkManager.m 里所有 `il_postPath:ILNetworkPath...` 的常量名 grep 出来，跟 ILNetworkDefine.h 里的 `extern` 列表对一遍。少的就漏了，多的就是历史遗留。
+写完 ILLiveNetworkManager.m 后，立刻做一次自检：把 ILLiveNetworkManager.m 里所有 `initWithPath:ILNetworkPath...` 的常量名 grep 出来，跟 ILNetworkDefine.h 里的 `extern` 列表对一遍。少的就漏了，多的就是历史遗留。
 
 ```bash
 # 提取 ILLiveNetworkManager.m 里所有引用的 path 常量
@@ -122,9 +122,9 @@ NSString * const ILNetworkPathStudentLiveStudentRaiseHand = @"/student_live/stud
 
 ILLiveNetworkManager.m 里使用：
 ```objc
-[self il_postPath:ILNetworkPathStudentLiveStudentRaiseHand
-          request:req
-    responseClass:[ILILStudentRaiseHandResp class]
+ILILStudentRaiseHandReq *req = [[ILILStudentRaiseHandReq alloc] initWithPath:ILNetworkPathStudentLiveStudentRaiseHand];
+[self il_postRequest:req
+     responseClass:[ILILStudentRaiseHandResp class]
           ...];
 ```
 

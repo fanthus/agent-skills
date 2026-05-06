@@ -84,6 +84,24 @@ PB 生成的类名前缀是 `ILIL`：第一个 `IL` 是包前缀，第二个 `IL
 
 ## .m 里的方法实现
 
+内部 helper 固定只保留这一种 POST 入口，不要再生成额外的 path 参数转发 helper：
+
+```objc
++ (void)il_postRequest:(GPBMessage *)request
+         responseClass:(Class)responseClass
+               success:(ILNetworkSuccessBlock)success
+               failure:(ILNetworkFailureBlock)failure {
+    ILLiveNetworkManager *manager = [self shared];
+    [self il_logPostCurlWithPath:request.networkPath request:request];
+    [manager.service requestWithPath:request.networkPath
+                                    method:ILHTTPMethodPost
+                                   request:request
+                             responseClass:responseClass
+                                   success:success
+                                   failure:failure];
+}
+```
+
 模式：
 
 ```objc
@@ -91,11 +109,10 @@ PB 生成的类名前缀是 `ILIL`：第一个 `IL` 是包前缀，第二个 `IL
 + (void)<methodName>WithRoomID:(int64_t)roomID
                        success:(void (^)(<RespClass> *resp))success
                        failure:(void (^)(NSError *error))failure {
-    <ReqClass> *req = [[<ReqClass> alloc] init];
+    <ReqClass> *req = [[<ReqClass> alloc] initWithPath:ILNetworkPath<Xxx>];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPath<Xxx>
-              request:req
-        responseClass:[<RespClass> class]
+    [self il_postRequest:req
+         responseClass:[<RespClass> class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -109,7 +126,9 @@ PB 生成的类名前缀是 `ILIL`：第一个 `IL` 是包前缀，第二个 `IL
 ```
 
 要点：
-- 全部走 `il_postPath:request:responseClass:success:failure:`，不直接调 service
+- Req 必须用 `[[<ReqClass> alloc] initWithPath:ILNetworkPath<Xxx>]` 创建，把 path 绑定到 `request.networkPath`
+- 全部走 `il_postRequest:responseClass:success:failure:`，不要再生成或调用旧的 path 参数转发 helper
+- 内部 helper 只保留 `il_postRequest`，实现里先取 `ILLiveNetworkManager *manager = [self shared]`，调用 `il_logPostCurlWithPath:request:`，再用 `manager.service requestWithPath:request.networkPath ...`
 - success block 形参类型是 `id response`，调用外层时直接传（OC 类型系统会自动转）
 - failure block 形参是 `(NSError *error, id response)`，外层只关心 `error`
 - 字符串字段做 nil 防御：`req.leaveReason = leaveReason ?: @"";`

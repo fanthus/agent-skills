@@ -92,20 +92,9 @@
          responseClass:(Class)responseClass
                success:(ILNetworkSuccessBlock)success
                failure:(ILNetworkFailureBlock)failure {
-    [[self shared].service requestWithPath:request.networkPath
-                                    method:ILHTTPMethodPost
-                                   request:request
-                             responseClass:responseClass
-                                   success:success
-                                   failure:failure];
-}
-
-+ (void)il_postPath:(NSString *)path
-            request:(GPBMessage *)request
-      responseClass:(Class)responseClass
-            success:(ILNetworkSuccessBlock)success
-            failure:(ILNetworkFailureBlock)failure {
-    [[self shared].service requestWithPath:path
+    ILLiveNetworkManager *manager = [self shared];
+    [self il_logPostCurlWithPath:request.networkPath request:request];
+    [manager.service requestWithPath:request.networkPath
                                     method:ILHTTPMethodPost
                                    request:request
                              responseClass:responseClass
@@ -117,18 +106,13 @@
 
 // 学生加入房间，统一处理首次加入和断线重连；服务端按 userId 判断首次或重入
 + (void)studentJoinWithRoomID:(int64_t)roomID
-                     courseID:(int64_t)courseID
-                     lessonID:(int64_t)lessonID
                      platform:(ILCCPlatformType)platform
                       success:(void (^)(ILILStudentJoinResp *resp))success
                       failure:(void (^)(NSError *error))failure {
-    ILILStudentJoinReq *req = [[ILILStudentJoinReq alloc] init];
+    ILILStudentJoinReq *req = [[ILILStudentJoinReq alloc] initWithPath:ILNetworkPathStudentLiveRoomStudentJoin];
     req.roomId = roomID;
-//    req.courseId = courseID;
-//    req.lessonId = lessonID;
-    [self il_postPath:ILNetworkPathStudentLiveRoomStudentJoin
-              request:req
-        responseClass:[ILILStudentJoinResp class]
+    [self il_postRequest:req
+         responseClass:[ILILStudentJoinResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -145,12 +129,11 @@
                    leaveReason:(NSString *)leaveReason
                        success:(void (^)(ILILStudentLeaveResp *resp))success
                        failure:(void (^)(NSError *error))failure {
-    ILILStudentLeaveReq *req = [[ILILStudentLeaveReq alloc] init];
+    ILILStudentLeaveReq *req = [[ILILStudentLeaveReq alloc] initWithPath:ILNetworkPathStudentLiveRoomStudentLeave];
     req.roomId = roomID;
     req.leaveReason = leaveReason ?: @"";
-    [self il_postPath:ILNetworkPathStudentLiveRoomStudentLeave
-              request:req
-        responseClass:[ILILStudentLeaveResp class]
+    [self il_postRequest:req
+         responseClass:[ILILStudentLeaveResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -167,12 +150,11 @@
                               lessonID:(int64_t)lessonID
                                success:(void (^)(ILILGetStudentRoomInfoResp *resp))success
                                failure:(void (^)(NSError *error))failure {
-    ILILGetStudentRoomInfoReq *req = [[ILILGetStudentRoomInfoReq alloc] init];
+    ILILGetStudentRoomInfoReq *req = [[ILILGetStudentRoomInfoReq alloc] initWithPath:ILNetworkPathStudentLiveStudentRoomInfo];
     req.courseId = courseID;
     req.lessonId = lessonID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentRoomInfo
-              request:req
-        responseClass:[ILILGetStudentRoomInfoResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentRoomInfoResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -188,11 +170,10 @@
 + (void)getStudentInfoWithRoomID:(int64_t)roomID
                          success:(void (^)(ILILGetStudentInfoResp *resp))success
                          failure:(void (^)(NSError *error))failure {
-    ILILGetStudentInfoReq *req = [[ILILGetStudentInfoReq alloc] init];
+    ILILGetStudentInfoReq *req = [[ILILGetStudentInfoReq alloc] initWithPath:ILNetworkPathStudentLiveStudentInfo];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentInfo
-              request:req
-        responseClass:[ILILGetStudentInfoResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentInfoResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -209,12 +190,11 @@
                               groupID:(int64_t)groupID
                               success:(void (^)(ILILGetStudentGroupInfoResp *resp))success
                               failure:(void (^)(NSError *error))failure {
-    ILILGetStudentGroupInfoReq *req = [[ILILGetStudentGroupInfoReq alloc] init];
+    ILILGetStudentGroupInfoReq *req = [[ILILGetStudentGroupInfoReq alloc] initWithPath:ILNetworkPathStudentLiveStudentGroupInfo];
     req.roomId = roomID;
     req.groupId = groupID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentGroupInfo
-              request:req
-        responseClass:[ILILGetStudentGroupInfoResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentGroupInfoResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -230,11 +210,10 @@
 + (void)getStudentActivityProgressWithRoomID:(int64_t)roomID
                                      success:(void (^)(ILILGetStudentActivityProgressResp *resp))success
                                      failure:(void (^)(NSError *error))failure {
-    ILILGetStudentActivityProgressReq *req = [[ILILGetStudentActivityProgressReq alloc] init];
+    ILILGetStudentActivityProgressReq *req = [[ILILGetStudentActivityProgressReq alloc] initWithPath:ILNetworkPathStudentLiveStudentActivityProgress];
     req.roomId = @(roomID).stringValue;
-    [self il_postPath:ILNetworkPathStudentLiveStudentActivityProgress
-              request:req
-        responseClass:[ILILGetStudentActivityProgressResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentActivityProgressResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -250,11 +229,10 @@
 + (void)getStudentSpeakProgressWithRoomID:(int64_t)roomID
                                   success:(void (^)(ILILGetStudentSpeakProgressResp *resp))success
                                   failure:(void (^)(NSError *error))failure {
-    ILILGetStudentSpeakProgressReq *req = [[ILILGetStudentSpeakProgressReq alloc] init];
+    ILILGetStudentSpeakProgressReq *req = [[ILILGetStudentSpeakProgressReq alloc] initWithPath:ILNetworkPathStudentLiveStudentSpeakProgress];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentSpeakProgress
-              request:req
-        responseClass:[ILILGetStudentSpeakProgressResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentSpeakProgressResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -270,11 +248,10 @@
 + (void)getStudentQuizProgressWithRoomID:(int64_t)roomID
                                  success:(void (^)(ILILGetStudentQuizProgressResp *resp))success
                                  failure:(void (^)(NSError *error))failure {
-    ILILGetStudentQuizProgressReq *req = [[ILILGetStudentQuizProgressReq alloc] init];
+    ILILGetStudentQuizProgressReq *req = [[ILILGetStudentQuizProgressReq alloc] initWithPath:ILNetworkPathStudentLiveStudentQuizProgress];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentQuizProgress
-              request:req
-        responseClass:[ILILGetStudentQuizProgressResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentQuizProgressResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -290,11 +267,10 @@
 + (void)getStudentVoteProgressWithRoomID:(int64_t)roomID
                                  success:(void (^)(ILILGetStudentVoteProgressResp *resp))success
                                  failure:(void (^)(NSError *error))failure {
-    ILILGetStudentVoteProgressReq *req = [[ILILGetStudentVoteProgressReq alloc] init];
+    ILILGetStudentVoteProgressReq *req = [[ILILGetStudentVoteProgressReq alloc] initWithPath:ILNetworkPathStudentLiveStudentVoteProgress];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentVoteProgress
-              request:req
-        responseClass:[ILILGetStudentVoteProgressResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentVoteProgressResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -310,11 +286,10 @@
 + (void)getStudentSignInProgressWithRoomID:(int64_t)roomID
                                    success:(void (^)(ILILGetStudentSignInProgressResp *resp))success
                                    failure:(void (^)(NSError *error))failure {
-    ILILGetStudentSignInProgressReq *req = [[ILILGetStudentSignInProgressReq alloc] init];
+    ILILGetStudentSignInProgressReq *req = [[ILILGetStudentSignInProgressReq alloc] initWithPath:ILNetworkPathStudentLiveStudentSignInProgress];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentSignInProgress
-              request:req
-        responseClass:[ILILGetStudentSignInProgressResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentSignInProgressResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -330,11 +305,10 @@
 + (void)getStudentGrabMicProgressWithRoomID:(int64_t)roomID
                                     success:(void (^)(ILILGetStudentGrabMicProgressResp *resp))success
                                     failure:(void (^)(NSError *error))failure {
-    ILILGetStudentGrabMicProgressReq *req = [[ILILGetStudentGrabMicProgressReq alloc] init];
+    ILILGetStudentGrabMicProgressReq *req = [[ILILGetStudentGrabMicProgressReq alloc] initWithPath:ILNetworkPathStudentLiveStudentGrabMicProgress];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentGrabMicProgress
-              request:req
-        responseClass:[ILILGetStudentGrabMicProgressResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentGrabMicProgressResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -350,11 +324,10 @@
 + (void)getStudentTimerProgressWithRoomID:(int64_t)roomID
                                   success:(void (^)(ILILGetStudentTimerProgressResp *resp))success
                                   failure:(void (^)(NSError *error))failure {
-    ILILGetStudentTimerProgressReq *req = [[ILILGetStudentTimerProgressReq alloc] init];
+    ILILGetStudentTimerProgressReq *req = [[ILILGetStudentTimerProgressReq alloc] initWithPath:ILNetworkPathStudentLiveStudentTimerProgress];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentTimerProgress
-              request:req
-        responseClass:[ILILGetStudentTimerProgressResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentTimerProgressResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -371,12 +344,11 @@
                                 quizID:(int64_t)quizID
                                success:(void (^)(ILILGetStudentReplayQuizResp *resp))success
                                failure:(void (^)(NSError *error))failure {
-    ILILGetStudentReplayQuizReq *req = [[ILILGetStudentReplayQuizReq alloc] init];
+    ILILGetStudentReplayQuizReq *req = [[ILILGetStudentReplayQuizReq alloc] initWithPath:ILNetworkPathStudentLiveStudentReplayQuiz];
     req.roomId = roomID;
     req.quizId = quizID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentReplayQuiz
-              request:req
-        responseClass:[ILILGetStudentReplayQuizResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentReplayQuizResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -392,11 +364,10 @@
 + (void)getStudentClassReportWithRoomID:(int64_t)roomID
                                 success:(void (^)(ILILGetStudentClassReportResp *resp))success
                                 failure:(void (^)(NSError *error))failure {
-    ILILGetStudentClassReportReq *req = [[ILILGetStudentClassReportReq alloc] init];
+    ILILGetStudentClassReportReq *req = [[ILILGetStudentClassReportReq alloc] initWithPath:ILNetworkPathStudentLiveStudentClassReport];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentClassReport
-              request:req
-        responseClass:[ILILGetStudentClassReportResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentClassReportResp class]
               success:^(id response) {
         if (success) {
             success(response);
@@ -412,11 +383,10 @@
 + (void)getStudentReplayInfoWithRoomID:(int64_t)roomID
                                success:(void (^)(ILILGetStudentReplayInfoResp *resp))success
                                failure:(void (^)(NSError *error))failure {
-    ILILGetStudentReplayInfoReq *req = [[ILILGetStudentReplayInfoReq alloc] init];
+    ILILGetStudentReplayInfoReq *req = [[ILILGetStudentReplayInfoReq alloc] initWithPath:ILNetworkPathStudentLiveStudentReplay];
     req.roomId = roomID;
-    [self il_postPath:ILNetworkPathStudentLiveStudentReplay
-              request:req
-        responseClass:[ILILGetStudentReplayInfoResp class]
+    [self il_postRequest:req
+         responseClass:[ILILGetStudentReplayInfoResp class]
               success:^(id response) {
         if (success) {
             success(response);
