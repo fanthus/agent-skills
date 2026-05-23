@@ -28,6 +28,8 @@ resp.data_p.rtcTokensArray[0].channelType;
 | `resp.data_p.xxx` | `data.xxx` | `data_p` 映射为 `data` |
 | `resp.data_p.rtcTokensArray` | `data.rtcTokens[RTCTokenInfo]` | 数组字段，补充元素类型 |
 | `resp.data_p.xxxArray[i].yyy` | `data.xxx[ElementType].yyy` | 数组元素字段 |
+| `resp.data_p.tagsArray` | `data.tags[string]` | 字符串数组，类型列写 `string[]` |
+| `req.selectedOptionsArray` | `selectedOptions[int32]` | int32 数组，类型列写 `int32[]` |
 
 ## 请求类
 
@@ -38,6 +40,14 @@ resp.data_p.rtcTokensArray[0].channelType;
 | `StudentJoinReq` | `roomId` |
 | `StudentLeaveReq` | `roomId`, `leaveReason` |
 | `GetStudentRoomInfoReq` | `courseId`, `lessonId` |
+
+请求类没有字段时，字段表必须输出：
+
+```markdown
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| - | - | 无 |
+```
 
 ## 响应类
 
@@ -55,3 +65,15 @@ resp.data_p.rtcTokensArray[0].channelType;
 | `IMConfig` | `data.imConfig.tokenInfo.userSig` |
 | `IMGroupInfo` | `data.imGroups[IMGroupInfo].groupType` |
 | `GroupMemberInfo` | `data.members[GroupMemberInfo].nickname` |
+
+## 基本类型数组
+
+基本类型数组的字段路径和类型列必须同时体现数组语义：
+
+| OC 类型 | 文档字段 | 类型列 |
+|---------|----------|--------|
+| `NSMutableArray<NSString*> *tagsArray` / `GPBStringArray *tagsArray` | `tags[string]` | `string[]` |
+| `GPBInt32Array *selectedOptionsArray` | `selectedOptions[int32]` | `int32[]` |
+| `GPBInt64Array *idsArray` | `ids[int64]` | `int64[]` |
+
+不要把基本类型数组输出为 `[NSString]`、`NSString` 或普通对象数组。
