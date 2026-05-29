@@ -1,10 +1,10 @@
 ---
-name: add-business-logging
-description: 为 Objective-C 类添加业务日志。触发词："添加业务日志", "add business logging", "add logging"。
+name: ihuman-add-business-logging
+description: 为 Objective-C 类添加业务日志。触发词："添加业务日志", "add business logging", "add logging", "ihuman-add-business-logging"。
 version: 2.0.0
 ---
 
-# Add Business Logging
+# iHuman Add Business Logging
 
 为 Objective-C 项目中的类添加 ILLogBusiness 业务日志。
 
