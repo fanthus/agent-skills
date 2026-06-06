@@ -1,6 +1,0 @@
-interface:
-  display_name: "iHuman 爱学需求顾问"
-  short_description: "实时读取产品文档分析爱学需求和实现方案"
-  default_prompt: "使用 $ihuman-aixue-requirement-advisor 分析当前爱学项目中的一个产品点或新需求，实时读取产品文档后输出背景、产品预期、现状、实现方案、影响范围、风险和验证计划。"
-policy:
-  allow_implicit_invocation: true
