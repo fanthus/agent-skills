@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "90452188-320d-4656-9d98-40d671882801",
+  "path": "project-analyzer",
+  "path_key": "project-analyzer",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

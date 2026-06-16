@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "d47d1afb-859e-4ce9-8297-37349bf4bd19",
+  "path": "ihuman-proto2api-spec",
+  "path_key": "ihuman-proto2api-spec",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

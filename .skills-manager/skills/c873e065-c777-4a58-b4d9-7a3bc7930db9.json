@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "c873e065-c777-4a58-b4d9-7a3bc7930db9",
+  "path": "project-explorer",
+  "path_key": "project-explorer",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

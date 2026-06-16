@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "bffe3c71-d59e-4277-8202-871102b6a3fa",
+  "path": "il-ihuman-inspector",
+  "path_key": "il-ihuman-inspector",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

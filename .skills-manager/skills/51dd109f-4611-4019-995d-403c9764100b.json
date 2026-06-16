@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "51dd109f-4611-4019-995d-403c9764100b",
+  "path": "openclaw-security",
+  "path_key": "openclaw-security",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

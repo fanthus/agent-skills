@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "86ac7d98-50dc-4058-98df-8e3388b1de4d",
+  "path": "ios-basic-interviewer",
+  "path_key": "ios-basic-interviewer",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

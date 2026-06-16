@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "564e5e1d-e65f-4794-a4f0-ae5d31001d26",
+  "path": "ios-project-interview",
+  "path_key": "ios-project-interview",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

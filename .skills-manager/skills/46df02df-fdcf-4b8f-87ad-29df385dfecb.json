@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "46df02df-fdcf-4b8f-87ad-29df385dfecb",
+  "path": "openclaw-expert",
+  "path_key": "openclaw-expert",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

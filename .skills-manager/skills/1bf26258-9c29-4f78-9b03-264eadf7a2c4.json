@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "1bf26258-9c29-4f78-9b03-264eadf7a2c4",
+  "path": "clear-thinking",
+  "path_key": "clear-thinking",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

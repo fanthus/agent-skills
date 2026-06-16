@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "e5e1996f-e7d2-41bf-b768-5927105822ca",
+  "path": "appstore-competitor-analysis",
+  "path_key": "appstore-competitor-analysis",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

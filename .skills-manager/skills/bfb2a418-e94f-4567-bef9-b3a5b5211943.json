@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "bfb2a418-e94f-4567-bef9-b3a5b5211943",
+  "path": "ihuman-add-business-logging",
+  "path_key": "ihuman-add-business-logging",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "79b0ff22-dd34-427e-947a-eb798295e76f",
+  "path": "electron-dev",
+  "path_key": "electron-dev",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

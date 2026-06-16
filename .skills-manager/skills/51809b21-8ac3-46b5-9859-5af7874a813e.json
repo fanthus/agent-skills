@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "51809b21-8ac3-46b5-9859-5af7874a813e",
+  "path": "windows-genius",
+  "path_key": "windows-genius",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

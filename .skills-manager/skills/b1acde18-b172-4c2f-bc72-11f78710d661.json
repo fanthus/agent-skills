@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "b1acde18-b172-4c2f-bc72-11f78710d661",
+  "path": "react-native-app",
+  "path_key": "react-native-app",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "8eb392fd-247c-4c72-be29-9cf2fc96115d",
+  "path": "appstore-listing-writer",
+  "path_key": "appstore-listing-writer",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

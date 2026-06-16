@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "757c2b83-5fd9-464e-a6a8-d1f0742b0850",
+  "path": "macos-swiftui-dev",
+  "path_key": "macos-swiftui-dev",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}

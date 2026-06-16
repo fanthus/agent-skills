@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "9c008921-a030-4ee0-a69d-53da011b78eb",
+  "path": "chrome-extension",
+  "path_key": "chrome-extension",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "import",
+    "ref": null,
+    "subpath": null,
+    "branch": null
+  }
+}
