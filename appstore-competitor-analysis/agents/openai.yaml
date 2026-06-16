@@ -1,4 +1,4 @@
 interface:
   display_name: "App Store 竞品分析"
-  short_description: "从 App Store 竞品中提炼产品假设与 MVP 机会"
-  default_prompt: "Use $appstore-competitor-analysis to analyze this App Store product direction and produce a product hypothesis."
+  short_description: "分析 App Store 竞品、收入指标与 MVP 机会"
+  default_prompt: "Use $appstore-competitor-analysis to analyze this App Store product direction, including competitor metrics, revenue signals, and a product hypothesis."
