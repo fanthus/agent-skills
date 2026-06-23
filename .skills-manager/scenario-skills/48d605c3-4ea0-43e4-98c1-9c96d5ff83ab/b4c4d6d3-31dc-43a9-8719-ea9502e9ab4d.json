@@ -9,6 +9,7 @@
     "codex": true,
     "cursor": true,
     "openclaw": true,
-    "pi": true
+    "pi": true,
+    "workbuddy": true
   }
 }

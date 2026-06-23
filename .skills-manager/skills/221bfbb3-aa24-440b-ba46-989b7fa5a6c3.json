@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "221bfbb3-aa24-440b-ba46-989b7fa5a6c3",
+  "path": "social-content",
+  "path_key": "social-content",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "skillssh",
+    "ref": "coreyhaines31/marketingskills/social-content",
+    "subpath": "skills",
+    "branch": null
+  }
+}

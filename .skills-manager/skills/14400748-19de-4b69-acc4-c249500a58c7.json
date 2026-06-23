@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "skill_id": "14400748-19de-4b69-acc4-c249500a58c7",
+  "path": "json-canvas",
+  "path_key": "json-canvas",
+  "enabled": true,
+  "tags": [],
+  "source": {
+    "type": "git",
+    "ref": "https://github.com/kepano/obsidian-skills",
+    "subpath": "skills/json-canvas",
+    "branch": null
+  }
+}
